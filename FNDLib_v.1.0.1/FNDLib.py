@@ -5,6 +5,8 @@ import torch
 from torch.utils.data import DataLoader
 from util.early_stop import EarlyStopping
 from util.tool import metric_new
+import logging
+import os
 
 
 class FNDLib():
@@ -55,6 +57,25 @@ class FNDLib():
         self.optimizer = torch.optim.Adam(Model.parameters(), cfg.lr, weight_decay=cfg.weight_decay)
         self.early_stopping = EarlyStopping(patience=cfg.patience, verbose=True, model_path=cfg.model_name)
         self.loss_fun_all = torch.nn.CrossEntropyLoss()
+
+        # Logger file
+        self.current_time = strftime("%Y-%m-%d %H-%M-%S", localtime(time()))
+        self.logger = logging.getLogger("This train adopt" + cfg.model_type + " model-> " + cfg.model_name)
+        self.logger.setLevel(level=logging.INFO)
+        if not os.path.exists('./log/'):
+            os.makedirs('./log/')
+        self.logFilename = cfg.model_name + "_" + cfg.model_type + "_" + cfg.dataset_name + "_" + self.current_time
+        handler = logging.FileHandler('./log/' + self.logFilename + '.log')
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+
+        # Basic information in logger file
+        message = "\n" * 2 + "-" * 10 + "Recommend Model Infomation" + "-" * 10 + "\n"
+        for i in cfg._get_kwargs():
+            message += str(i[0]) + ":" + str(i[1]) + "\n"
+        self.logger.info(message)
+        print(message)
 
     def Train(self):
         print("*" * 80)
@@ -175,7 +196,10 @@ class FNDLib():
             test_y_data_epoch = torch.cat([i for i in test_y_batch], 0).cpu()
 
             pre, Rec, F1, Acc, auc = metric_new(pred_one, pred, test_y_data_epoch, 'test')
-            print('{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}'.format(Acc, pre, Rec, F1))
-
+            message = "\n" * 2 + "-" * 10 + 'Test result: \n Accuracy:{:.3f}\t Precision:{:.3f}\t ' \
+                                            'Recall: {:.3f}\t F1_score:{:.3f}'.format(Acc, pre, Rec,
+                                                                                      F1) + "-" * 10 + "\n"
+            self.logger.info(message)
+            print(message)
     def anyNewMethod(self):
         pass

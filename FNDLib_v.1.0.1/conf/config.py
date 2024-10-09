@@ -5,6 +5,7 @@ def Config():
     parser = argparse.ArgumentParser()
 
     # dataset #
+    parser.add_argument("--dataset_name", type=str, default="Politifact")
     parser.add_argument("--news_npy_path", type=str, default=".//data//Politifact//news_politic_2.npy")
     parser.add_argument("--comment_npy_path", type=str, default=".//data//Politifact//comments_politic_2.npy")
     parser.add_argument("--label_npy_path", type=str, default=".//data//Politifact//label_politic_2.npy")
